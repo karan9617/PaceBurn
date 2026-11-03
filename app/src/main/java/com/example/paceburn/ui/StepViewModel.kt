@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.paceburn.data.AwardManager
 import com.example.paceburn.data.DailyRecord
 import com.example.paceburn.data.PreferencesManager
 import com.example.paceburn.sensor.StepSensorManager
@@ -36,6 +37,7 @@ class StepViewModel(application: Application) : AndroidViewModel(application) {
 
     private val preferencesManager = PreferencesManager(application)
     private val stepSensorManager = StepSensorManager(application)
+    private val awardManager = AwardManager(preferencesManager)
 
     private val _uiState = MutableStateFlow(StepUiState())
     val uiState: StateFlow<StepUiState> = _uiState.asStateFlow()
@@ -68,6 +70,7 @@ class StepViewModel(application: Application) : AndroidViewModel(application) {
 
     fun refreshState() {
         preferencesManager.checkNewDayReset()
+        awardManager.checkAndNotifyNewAwards(getApplication())
         val steps = preferencesManager.getTodaySteps()
         val goal = preferencesManager.getStepGoal()
         val weight = preferencesManager.getUserWeight()

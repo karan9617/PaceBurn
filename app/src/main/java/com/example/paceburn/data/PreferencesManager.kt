@@ -31,6 +31,9 @@ class PreferencesManager(context: Context) {
         private const val KEY_INITIAL_SENSOR_STEPS = "initial_sensor_steps"
         private const val KEY_ACTIVE_TIME_SECONDS = "active_time_seconds"
         private const val KEY_DAILY_HISTORY = "daily_history_json"
+        private const val KEY_UNLOCKED_AWARDS_SET = "unlocked_awards_set"
+        private const val KEY_AWARDS_INITIALIZED = "awards_initialized_v1"
+        private const val KEY_DAILY_QUOTES_ENABLED = "daily_quotes_enabled"
 
         const val DEFAULT_STEP_GOAL = 10000
         const val DEFAULT_WEIGHT_KG = 70.0f
@@ -217,5 +220,31 @@ class PreferencesManager(context: Context) {
 
     fun calculateDistanceKm(steps: Int, stepLengthCm: Float): Float {
         return (steps * stepLengthCm) / 100000.0f
+    }
+
+    fun getUnlockedAwardIds(): Set<String> {
+        return prefs.getStringSet(KEY_UNLOCKED_AWARDS_SET, emptySet()) ?: emptySet()
+    }
+
+    fun saveUnlockedAwardId(awardId: String) {
+        val currentSet = getUnlockedAwardIds().toMutableSet()
+        currentSet.add(awardId)
+        prefs.edit().putStringSet(KEY_UNLOCKED_AWARDS_SET, currentSet).apply()
+    }
+
+    fun isAwardsInitialized(): Boolean {
+        return prefs.getBoolean(KEY_AWARDS_INITIALIZED, false)
+    }
+
+    fun setAwardsInitialized() {
+        prefs.edit().putBoolean(KEY_AWARDS_INITIALIZED, true).apply()
+    }
+
+    fun isDailyQuotesEnabled(): Boolean {
+        return prefs.getBoolean(KEY_DAILY_QUOTES_ENABLED, true)
+    }
+
+    fun setDailyQuotesEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_DAILY_QUOTES_ENABLED, enabled).apply()
     }
 }

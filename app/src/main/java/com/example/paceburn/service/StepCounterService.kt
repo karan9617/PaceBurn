@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.app.NotificationCompat
 import com.example.paceburn.MainActivity
 import com.example.paceburn.R
+import com.example.paceburn.data.AwardManager
 import com.example.paceburn.data.PreferencesManager
 import com.example.paceburn.sensor.StepSensorManager
 import java.util.Locale
@@ -24,6 +25,7 @@ class StepCounterService : Service() {
     private val binder = LocalBinder()
     private lateinit var preferencesManager: PreferencesManager
     private lateinit var stepSensorManager: StepSensorManager
+    private lateinit var awardManager: AwardManager
 
     companion object {
         const val CHANNEL_ID = "paceburn_step_channel"
@@ -40,11 +42,13 @@ class StepCounterService : Service() {
         super.onCreate()
         preferencesManager = PreferencesManager(this)
         stepSensorManager = StepSensorManager(this)
+        awardManager = AwardManager(preferencesManager)
         createNotificationChannel()
 
         stepSensorManager.onStepIncrementListener = { increment ->
             val currentSteps = preferencesManager.getTodaySteps() + increment
             preferencesManager.saveTodaySteps(currentSteps)
+            awardManager.checkAndNotifyNewAwards(this)
             updateNotification(currentSteps)
         }
     }

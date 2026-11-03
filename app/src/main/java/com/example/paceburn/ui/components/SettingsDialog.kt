@@ -13,6 +13,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,9 +22,14 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.paceburn.data.PreferencesManager
+import com.example.paceburn.quotes.DailyQuoteScheduler
+import com.example.paceburn.quotes.QuoteManager
 
 @Composable
 fun SettingsDialog(
@@ -33,6 +39,10 @@ fun SettingsDialog(
     onDismiss: () -> Unit,
     onSave: (newGoal: Int, newWeight: Float, newStepLength: Float) -> Unit
 ) {
+    val context = LocalContext.current
+    val prefs = remember { PreferencesManager(context) }
+    var dailyQuotesEnabled by remember { mutableStateOf(prefs.isDailyQuotesEnabled()) }
+
     var goalState by remember { mutableFloatStateOf(currentGoal.toFloat()) }
     var weightText by remember { mutableStateOf(currentWeight.toString()) }
     var stepLengthText by remember { mutableStateOf(currentStepLength.toString()) }
@@ -101,13 +111,69 @@ fun SettingsDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Daily Motivational Quote Preference & Test Button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth(0.78f)) {
+                        Text(
+                            text = "Daily Motivational Quotes",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Receive an inspiring quote every morning",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Switch(
+                        checked = dailyQuotesEnabled,
+                        onCheckedChange = { dailyQuotesEnabled = it }
+                    )
+                }
+
+                if (dailyQuotesEnabled) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    TextButton(
+                        onClick = {
+                            QuoteManager.sendQuoteNotification(
+                                context = context,
+                                quote = QuoteManager.getRandomQuote()
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "💡 Test Daily Quote Notification",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
+            val context = LocalContext.current
             TextButton(
                 onClick = {
+                    val prefs = PreferencesManager(context)
                     val finalWeight = weightText.toFloatOrNull() ?: currentWeight
                     val finalStepLength = stepLengthText.toFloatOrNull() ?: currentStepLength
+                    
+                    prefs.setDailyQuotesEnabled(dailyQuotesEnabled)
+                    if (dailyQuotesEnabled) {
+                        DailyQuoteScheduler.scheduleDailyQuoteWork(context)
+                    } else {
+                        DailyQuoteScheduler.cancelDailyQuoteWork(context)
+                    }
                     onSave(goalState.toInt(), finalWeight, finalStepLength)
                 }
             ) {
