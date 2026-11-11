@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.paceburn"
-    compileSdk = 35
+    namespace = "com.karan.paceburn"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.paceburn"
+        applicationId = "com.karan.paceburn"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
